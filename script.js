@@ -4,10 +4,8 @@ const generateButton = document.getElementById('generateButton');
 const resultContainer = document.getElementById('resultContainer');
 const resultImage = document.getElementById('resultImage');
 const downloadButton = document.getElementById('downloadButton');
-const shareButton = document.getElementById('shareButton');
 
 generateButton.addEventListener('click', generateProfilePic);
-shareButton.addEventListener('click', shareOnWhatsApp);
 
 function generateProfilePic() {
     const overlayRadioButtons = document.getElementsByName('overlay');
