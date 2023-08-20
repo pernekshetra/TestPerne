@@ -45,9 +45,6 @@ function generateProfilePic() {
             
             // Calculate the aspect fill dimensions for userImage
             var aspectRatio = userImage.height / userImage.width;
-            if (aspectRatio > 1) {
-aspectRatio = userImage.width / userImage.height;
-            }
             let userWidth, userHeight, userX, userY;
 
             if (aspectRatio > overlayImage.height / overlayImage.width) {
