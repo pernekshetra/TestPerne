@@ -56,7 +56,7 @@ function generateProfilePic() {
                 userWidth = overlayImage.width;
                 userHeight = overlayImage.height
                 userX = 0;
-                userY = (overlayImage.height - userHeight) / 2;
+                userY = 0;
             }
 
             // Then draw userImage with aspect-fit
