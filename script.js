@@ -7,6 +7,8 @@ const downloadButton = document.getElementById('downloadButton');
 
 generateButton.addEventListener('click', generateProfilePic);
 
+generateButton.addEventListener('click', generateProfilePic);
+
 function generateProfilePic() {
     const overlayRadioButtons = document.getElementsByName('overlay');
     let selectedOverlay;
@@ -43,13 +45,13 @@ function generateProfilePic() {
 
             const context = canvas.getContext('2d');
             
-            // Calculate the aspect fill dimensions for userImage
+            // Calculate the aspect fill dimensions for userImage within overlayImage
             var aspectRatio = userImage.width / userImage.height;
             let userWidth, userHeight, userX, userY;
 
-            if (aspectRatio > overlayImage.height / overlayImage.width) {
+            if (aspectRatio > overlayImage.width / overlayImage.height) {
                 userWidth = overlayImage.width;
-                userHeight = overlayImage.height / aspectRatio;
+                userHeight = overlayImage.width / aspectRatio;
                 userX = 0;
                 userY = (overlayImage.height - userHeight) / 2;
             } else {
@@ -58,13 +60,13 @@ function generateProfilePic() {
                 userX = (overlayImage.width - userWidth) / 2;
                 userY = 0;
             }
-
-// Then draw userImage with aspect fill
+ // Then draw userImage with aspect-fill
             context.drawImage(userImage, userX, userY, userWidth, userHeight);
+
             // Draw overlayImage first
             context.drawImage(overlayImage, 0, 0, overlayImage.width, overlayImage.height);
-            
-            
+
+           
 
             resultImage.src = canvas.toDataURL('image/png');
             resultContainer.style.display = 'block';
@@ -74,3 +76,4 @@ function generateProfilePic() {
 
     reader.readAsDataURL(imageInput.files[0]);
 }
+
