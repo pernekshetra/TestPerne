@@ -3,68 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nanna Mara Profile Pic Generator</title>
-    <link rel="stylesheet" href="style.css">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="keywords" content="Perne Kaliyata">
-      <meta name="description" content="PerneKaliyata">
-      <meta property="og:image" content="https://pernekaliyata.in/cover.jpg">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1024">
-<meta property="og:image:height" content="1024">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" type="image/png" href="/favicon.png" />
-  <link rel="icon" type="image/png" href="favicon.png" />
+    <title>Profile Picture Editor</title>
+    <style>
+        #editor-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-NV7VF0MS20"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+        canvas {
+            border: 1px solid #000;
+            max-width: 100%;
+            max-height: 80vh;
+        }
 
-  gtag('config', 'G-NV7VF0MS20');
-</script>
-
+        button {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Nanna Mara</h1>
-        <h2>Profile Pic Generator<h2>
-    </header>
-    <main>
-        <div id="uploadContainer">
-            <p><b>Upload your photo</b></p>
-            <input type="file" id="imageInput" accept="image/*">
-            <p><b>Choose a Frame</b></p>
-            <div class="overlay-options">
-                <label class="overlay-option">
-                    <input type="radio" name="overlay" value="overlay1.png" checked>
-                    <img src="overlay1.png" alt="Overlay 1">
-                    
-                </label>
-                <label class="overlay-option">
-                    <input type="radio" name="overlay" value="overlay2.png">
-                    <img src="overlay2.png" alt="Overlay 2">
-                </label>
-            </div>
-            <p>This is a simple tool built to help you. <b>Please upload square image for better result</b>. All image processing is conducted locally, directly within your web browser. We want to make it clear that we do not read or upload your images</p>
-            <button id="generateButton">Generate Profile Photo</button>
-        </div>
-        <div id="resultContainer">
-            <img id="resultImage" alt="Generated Image">
-           <a id="downloadButton" download="profile_pic.png">Download your photo</a>
-        </div>
-    </main>
-     <img id="bottomImage" src="cover2.jpg" alt="Cover Poster">
- <img id="bottomImage" src="cover.jpg" alt="Cover Poster">
-    <footer>
-        <div>
+    <div id="editor-container">
+        <input type="file" id="imageInput" accept="image/*">
+        <canvas id="canvas"></canvas>
+        <button id="cropButton">Crop</button>
+        <button id="rotateButton">Rotate</button>
+        <button id="resetButton">Reset</button>
+    </div>
 
-        <p>&copy; 2023 Shree Perne Muchilot Bhagavathi Kshetra.</p>
-        <p>All rights reserved.</p>
-        </div>
-    </footer>
-    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.1/fabric.min.js"></script>
+    <script>
+        const canvas = new fabric.Canvas('canvas');
+        const imageInput = document.getElementById('imageInput');
+        const cropButton = document.getElementById('cropButton');
+        const rotateButton = document.getElementById('rotateButton');
+        const resetButton = document.getElementById('resetButton');
+
+        imageInput.addEventListener('change', handleImageUpload);
+        cropButton.addEventListener('click', cropImage);
+        rotateButton.addEventListener('click', rotateImage);
+        resetButton.addEventListener('click', resetImage);
+
+        let uploadedImage;
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imgData = e.target.result;
+                    fabric.Image.fromURL(imgData, function (img) {
+                        uploadedImage = img;
+                        canvas.clear();
+                        canvas.add(uploadedImage);
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function cropImage() {
+            if (uploadedImage) {
+                canvas.setActiveObject(uploadedImage);
+                canvas.clipTo = function (ctx) {
+                    const activeObject = canvas.getActiveObject();
+                    ctx.rect(
+                        activeObject.left,
+                        activeObject.top,
+                        activeObject.width,
+                        activeObject.height
+                    );
+                };
+                canvas.renderAll();
+            }
+        }
+
+        function rotateImage() {
+            if (uploadedImage) {
+                const activeObject = canvas.getActiveObject();
+                activeObject.angle += 45;
+                canvas.renderAll();
+            }
+        }
+
+        function resetImage() {
+            if (uploadedImage) {
+                canvas.clear();
+                canvas.add(uploadedImage);
+                canvas.renderAll();
+                canvas.clipTo = null;
+            }
+        }
+    </script>
 </body>
 </html>
