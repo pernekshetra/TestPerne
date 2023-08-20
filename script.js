@@ -51,7 +51,17 @@ function generateProfilePic() {
             canvas.height = overlayImage.height;
 
             const context = canvas.getContext('2d');
-            context.drawImage(userImage, 0, 0, overlayImage.width, overlayImage.height);
+            
+
+var hRatio = canvas.width  / userImage.width;
+   var vRatio =  canvas.height / userImage.height;
+   var ratio  = Math.min ( hRatio, vRatio );
+   var centerShift_x = ( canvas.width - img.width*ratio ) / 2;
+   var centerShift_y = ( canvas.height - img.height*ratio ) / 2;  
+   ctx.clearRect(0,0,canvas.width, canvas.height);
+   ctx.drawImage(img, 0,0, img.width, img.height,
+                      centerShift_x,centerShift_y,img.width*ratio, img.height*ratio); 
+
             context.drawImage(overlayImage, 0, 0, overlayImage.width, overlayImage.height);
 
             resultImage.src = canvas.toDataURL('image/png');
@@ -62,3 +72,5 @@ function generateProfilePic() {
 
     reader.readAsDataURL(imageInput.files[0]);
 }
+
+
