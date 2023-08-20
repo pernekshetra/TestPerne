@@ -44,29 +44,29 @@ function generateProfilePic() {
             canvas.height = overlayImage.height;
 
             const context = canvas.getContext('2d');
+
+            const overlayAspectRatio = overlayImage.width / overlayImage.height;
+            const userAspectRatio = userImage.width / userImage.height;
             
-            // Calculate the aspect fill dimensions for userImage
-            const aspectRatio = userImage.height / userImage.width;
             let userWidth, userHeight, userX, userY;
 
-            if (aspectRatio > overlayImage.height / overlayImage.width) {
+            if (overlayAspectRatio > userAspectRatio) {
                 userWidth = overlayImage.width;
-                userHeight = overlayImage.height / aspectRatio;
+                userHeight = overlayImage.width / userAspectRatio;
                 userX = 0;
                 userY = (overlayImage.height - userHeight) / 2;
             } else {
-                userWidth = overlayImage.height * aspectRatio;
                 userHeight = overlayImage.height;
-                userX = (overlayImage.width - userWidth) / 2;
+                userWidth = overlayImage.height * userAspectRatio;
                 userY = 0;
+                userX = (overlayImage.width - userWidth) / 2;
             }
 
-// Then draw userImage with aspect fill
-            context.drawImage(userImage, userX, userY, userWidth, userHeight);
             // Draw overlayImage first
             context.drawImage(overlayImage, 0, 0, overlayImage.width, overlayImage.height);
             
-            
+            // Then draw userImage with aspect fill
+            context.drawImage(userImage, userX, userY, userWidth, userHeight);
 
             resultImage.src = canvas.toDataURL('image/png');
             resultContainer.style.display = 'block';
