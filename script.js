@@ -49,9 +49,9 @@ function generateProfilePic() {
 
             if (aspectRatio > overlayImage.width / overlayImage.height) {
                 userWidth = overlayImage.width;
-                userHeight = overlayImage.width / aspectRatio;
+                userHeight = overlayImage.height
                 userX = 0;
-                userY = (overlayImage.height - userHeight) / 2;
+                userY = 0;
             } else {
                 userWidth = overlayImage.width;
                 userHeight = overlayImage.height
