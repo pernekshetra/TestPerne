@@ -1,21 +1,3 @@
-const imageInput = document.getElementById('imageInput');
-const generateButton = document.getElementById('generateButton');
-const resultContainer = document.getElementById('resultContainer');
-const resultImage = document.getElementById('resultImage');
-const downloadButton = document.getElementById('downloadButton');
-const shareButton = document.getElementById('shareButton');
-
-generateButton.addEventListener('click', generateProfilePic);
-shareButton.addEventListener('click', shareOnWhatsApp);
-
-function shareOnWhatsApp() {
-    const generatedImageURL = resultImage.src;
-    const message = encodeURIComponent('Check out my new profile picture!');
-    const shareURL = `whatsapp://send?text=${message}%20${generatedImageURL}`;
-    
-    window.location.href = shareURL;
-}
-
 function generateProfilePic() {
     const overlayRadioButtons = document.getElementsByName('overlay');
     let selectedOverlay;
@@ -33,7 +15,7 @@ function generateProfilePic() {
     }
 
     if (!imageInput.files || imageInput.files.length === 0) {
-        alert('Please select your photo before generating profile photo.');
+        alert('Please select your photo before generating a profile photo.');
         return;
     }
 
@@ -52,17 +34,27 @@ function generateProfilePic() {
 
             const context = canvas.getContext('2d');
             
+            // Calculate the aspect fill dimensions for userImage
+            const aspectRatio = userImage.width / userImage.height;
+            let userWidth, userHeight, userX, userY;
 
-var hRatio = canvas.width  / userImage.width;
-   var vRatio =  canvas.height / userImage.height;
-   var ratio  = Math.min ( hRatio, vRatio );
-   var centerShift_x = ( canvas.width - img.width*ratio ) / 2;
-   var centerShift_y = ( canvas.height - img.height*ratio ) / 2;  
-   context.clearRect(0,0,canvas.width, canvas.height);
-   context.drawImage(userImage, 0,0, img.width, img.height,
-                      centerShift_x,centerShift_y,img.width*ratio, img.height*ratio); 
+            if (aspectRatio > overlayImage.width / overlayImage.height) {
+                userWidth = overlayImage.width;
+                userHeight = overlayImage.width / aspectRatio;
+                userX = 0;
+                userY = (overlayImage.height - userHeight) / 2;
+            } else {
+                userWidth = overlayImage.height * aspectRatio;
+                userHeight = overlayImage.height;
+                userX = (overlayImage.width - userWidth) / 2;
+                userY = 0;
+            }
 
+            // Draw overlayImage first
             context.drawImage(overlayImage, 0, 0, overlayImage.width, overlayImage.height);
+            
+            // Then draw userImage with aspect fill
+            context.drawImage(userImage, userX, userY, userWidth, userHeight);
 
             resultImage.src = canvas.toDataURL('image/png');
             resultContainer.style.display = 'block';
@@ -72,5 +64,3 @@ var hRatio = canvas.width  / userImage.width;
 
     reader.readAsDataURL(imageInput.files[0]);
 }
-
-
