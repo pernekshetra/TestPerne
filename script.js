@@ -50,11 +50,12 @@ function generateProfilePic() {
                 userY = 0;
             }
 
+// Then draw userImage with aspect fill
+            context.drawImage(userImage, userX, userY, userWidth, userHeight);
             // Draw overlayImage first
             context.drawImage(overlayImage, 0, 0, overlayImage.width, overlayImage.height);
             
-            // Then draw userImage with aspect fill
-            context.drawImage(userImage, userX, userY, userWidth, userHeight);
+            
 
             resultImage.src = canvas.toDataURL('image/png');
             resultContainer.style.display = 'block';
