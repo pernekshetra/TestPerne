@@ -44,7 +44,7 @@ function generateProfilePic() {
             const context = canvas.getContext('2d');
             
             // Calculate the aspect fill dimensions for userImage
-            var aspectRatio = userImage.height / userImage.width;
+            var aspectRatio = userImage.width / userImage.height;
             let userWidth, userHeight, userX, userY;
 
             if (aspectRatio > overlayImage.height / overlayImage.width) {
