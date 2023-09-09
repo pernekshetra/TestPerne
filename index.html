@@ -3,98 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Picture Editor</title>
-    <style>
-        #editor-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-
-        canvas {
-            border: 1px solid #000;
-            max-width: 100%;
-            max-height: 80vh;
-        }
-
-        button {
-            margin-top: 10px;
-        }
-    </style>
+    <title>Profile Picture Generator</title>
 </head>
 <body>
-    <div id="editor-container">
-        <input type="file" id="imageInput" accept="image/*">
-        <canvas id="canvas"></canvas>
-        <button id="cropButton">Crop</button>
-        <button id="rotateButton">Rotate</button>
-        <button id="resetButton">Reset</button>
+    <!-- Your existing HTML elements -->
+    <input type="file" id="imageInput">
+    <button id="generateButton">Generate</button>
+    <div id="resultContainer" style="display: none;">
+        <img id="resultImage" alt="Generated Profile Picture">
     </div>
+    <a id="downloadButton" download="profile.png">Download</a>
+    <input type="radio" name="overlay" value="overlay1.png">Overlay 1
+    <input type="radio" name="overlay" value="overlay2.png">Overlay 2
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.1/fabric.min.js"></script>
+    <!-- Additional HTML elements for canvas and zoom/pan controls -->
+    <canvas id="profileCanvas" width="400" height="400"></canvas>
+
     <script>
-        const canvas = new fabric.Canvas('canvas');
+        /**
+         * Profile Picture Generator
+         */
+
+        // Get references to HTML elements
         const imageInput = document.getElementById('imageInput');
-        const cropButton = document.getElementById('cropButton');
-        const rotateButton = document.getElementById('rotateButton');
-        const resetButton = document.getElementById('resetButton');
+        const generateButton = document.getElementById('generateButton');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultImage = document.getElementById('resultImage');
+        const downloadButton = document.getElementById('downloadButton');
+        const overlayRadioButtons = document.getElementsByName('overlay');
 
-        imageInput.addEventListener('change', handleImageUpload);
-        cropButton.addEventListener('click', cropImage);
-        rotateButton.addEventListener('click', rotateImage);
-        resetButton.addEventListener('click', resetImage);
+        // Get the 2D context of the canvas
+        const context = profileCanvas.getContext('2d');
 
-        let uploadedImage;
+        // Variables for tracking zoom and pan
+        let zoomLevel = 1;
+        let panX = 0;
+        let panY = 0;
 
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const imgData = e.target.result;
-                    fabric.Image.fromURL(imgData, function (img) {
-                        uploadedImage = img;
-                        canvas.clear();
-                        canvas.add(uploadedImage);
-                    });
-                };
-                reader.readAsDataURL(file);
-            }
+        // Variables for tracking mouse events
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        // Add event listeners to the "Generate" button and overlay radio buttons
+        generateButton.addEventListener('click', generateProfilePic);
+        for (const radioButton of overlayRadioButtons) {
+            radioButton.addEventListener('change', updateCanvas);
         }
 
-        function cropImage() {
-            if (uploadedImage) {
-                canvas.setActiveObject(uploadedImage);
-                canvas.clipTo = function (ctx) {
-                    const activeObject = canvas.getActiveObject();
-                    ctx.rect(
-                        activeObject.left,
-                        activeObject.top,
-                        activeObject.width,
-                        activeObject.height
+        // Add event listeners for mouse and touch events
+        profileCanvas.addEventListener('mousedown', handleMouseDown);
+        profileCanvas.addEventListener('mousemove', handleMouseMove);
+        profileCanvas.addEventListener('mouseup', handleMouseUp);
+        profileCanvas.addEventListener('mouseleave', handleMouseUp);
+        profileCanvas.addEventListener('wheel', handleMouseWheel);
+
+        // Function to handle mouse down event
+        function handleMouseDown(event) {
+            isDragging = true;
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+        }
+
+        // Function to handle mouse move event
+        function handleMouseMove(event) {
+            if (!isDragging) return;
+
+            const deltaX = event.clientX - lastMouseX;
+            const deltaY = event.clientY - lastMouseY;
+
+            // Update pan based on mouse movement
+            panX += deltaX;
+            panY += deltaY;
+
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+
+            // Redraw the canvas with the updated pan
+            updateCanvas();
+        }
+
+        // Function to handle mouse up event
+        function handleMouseUp() {
+            isDragging = false;
+        }
+
+        // Function to handle mouse wheel event (for zoom)
+        function handleMouseWheel(event) {
+            const zoomFactor = event.deltaY > 0 ? 1.1 : 0.9;
+
+            // Update zoom level based on mouse wheel direction
+            zoomLevel *= zoomFactor;
+
+            // Ensure zoom is within desired bounds (adjust as needed)
+            if (zoomLevel < 0.1) zoomLevel = 0.1;
+            if (zoomLevel > 5) zoomLevel = 5;
+
+            // Redraw the canvas with the updated zoom
+            updateCanvas();
+
+            // Prevent the default scroll behavior
+            event.preventDefault();
+        }
+
+        /**
+         * Generates a profile picture based on user inputs.
+         */
+        function generateProfilePic() {
+            let selectedOverlay;
+
+            // Find the selected overlay
+            for (const radioButton of overlayRadioButtons) {
+                if (radioButton.checked) {
+                    selectedOverlay = radioButton.value;
+                    break;
+                }
+            }
+
+            // If no overlay is selected, show an alert
+            if (!selectedOverlay) {
+                alert('Please select an overlay.');
+                return;
+            }
+
+            // If no image is selected, show an alert
+            if (!imageInput.files || imageInput.files.length === 0) {
+                alert('Please select your photo before generating a profile photo.');
+                return;
+            }
+
+            // Create an Image object for the selected overlay
+            const overlayImage = new Image();
+            overlayImage.src = selectedOverlay;
+
+            // Create a FileReader object to read the user's image file
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                // Create an Image object for the user's image
+                const userImage = new Image();
+                userImage.src = event.target.result;
+
+                // After the user's image loads
+                userImage.onload = function () {
+                    // Clear canvas
+                    context.clearRect(0, 0, profileCanvas.width, profileCanvas.height);
+
+                    // Calculate aspect fit dimensions for userImage within overlayImage
+                    var aspectRatio = userImage.width / userImage.height;
+                    let userWidth, userHeight, userX, userY;
+
+                    if (aspectRatio > 0.95 && aspectRatio < 1.05) {
+                        userWidth = profileCanvas.width;
+                        userHeight = profileCanvas.height;
+                        userX = 0;
+                        userY = 0;
+                    } else if (aspectRatio > overlayImage.width / overlayImage.height) {
+                        userWidth = profileCanvas.width;
+                        userHeight = profileCanvas.width / aspectRatio;
+                        userX = 0;
+                        userY = (profileCanvas.height - userHeight) / 2;
+                    } else {
+                        userWidth = profileCanvas.height * aspectRatio;
+                        userHeight = profileCanvas.height;
+                        userX = (profileCanvas.width - userWidth) / 2;
+                        userY = 0;
+                    }
+
+                    // Draw userImage with aspect-fit
+                    context.drawImage(
+                        userImage,
+                        userX + panX,
+                        userY + panY,
+                        userWidth * zoomLevel,
+                        userHeight * zoomLevel
                     );
+
+                    // Draw overlayImage on top
+                    context.drawImage(overlayImage, 0, 0, overlayImage.width, overlayImage.height);
+
+                    // Set the generated image as the source of the displayed image
+                    resultImage.src = profileCanvas.toDataURL('image/png');
+
+                    // Display the result container
+                    resultContainer.style.display = 'block';
+
+                    // Set the download button's link to the generated image
+                    downloadButton.href = profileCanvas.toDataURL('image/png');
                 };
-                canvas.renderAll();
-            }
+            };
+
+            // Read the user's image file as a data URL
+            reader.readAsDataURL(imageInput.files[0]);
         }
 
-        function rotateImage() {
-            if (uploadedImage) {
-                const activeObject = canvas.getActiveObject();
-                activeObject.angle += 45;
-                canvas.renderAll();
-            }
-        }
-
-        function resetImage() {
-            if (uploadedImage) {
-                canvas.clear();
-                canvas.add(uploadedImage);
-                canvas.renderAll();
-                canvas.clipTo = null;
+        // Function to update the canvas with current zoom and pan settings
+        function updateCanvas() {
+            if (imageInput.files && imageInput.files.length > 0) {
+                generateProfilePic();
             }
         }
     </script>
-</body>
-</html>
+</
