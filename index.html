@@ -146,6 +146,8 @@
                 // After the user's image loads
                 userImage.onload = function () {
                     // Clear canvas
+                        profileCanvas.width = overlayImage.width;
+            profileCanvas.height = overlayImage.height;
                     context.clearRect(0, 0, profileCanvas.width, profileCanvas.height);
 
                     // Calculate aspect fit dimensions for userImage within overlayImage
